@@ -1,0 +1,25 @@
+{
+  "name": "as-test-harness",
+  "version": "0.0.1",
+  "description": "Test harness for ActivityStreams 2.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "activitystrea.ms": "^0.1.0",
+    "body-parser": "~1.0.0",
+    "date-time-string": "0.0.8",
+    "ejs": "^2.2.4",
+    "express": "~4.0.0",
+    "jsonld": "^0.3.22",
+    "jsonlint": "^1.6.2",
+    "method-override": "~1.0.0",
+    "morgan": "~1.0.0",
+    "request": "^2.53.0",
+    "util": "^0.10.3"
+  },
+  "engines": {
+    "node": "0.10.*"
+  },
+  "repository": {}
+}

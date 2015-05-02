@@ -1,0 +1,8 @@
+applications:
+- disk_quota: 1024M
+  host: as-test-harness
+  name: as-test-harness
+  path: .
+  domain: mybluemix.net
+  instances: 1
+  memory: 256M
