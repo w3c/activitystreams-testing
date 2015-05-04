@@ -1,26 +1,6 @@
-# Node.js Starter Application
+# W3C Social Web Working Group - Activity Streams 2.0 Test Harness
 
-Bluemix provides a Node.js starter application as a template so that you can add your code and push the changes back to the Bluemix environment.
+This is a work-in-progress test harness for the Activity Streams 2.0
+specification.
 
-
-## Files
-
-The Node.js starter application has files as below:
-
-*   app.js
-
-	This file contains the server side JavaScript code for your application written using the Node.js API
-
-*   views/
-
-	This directory contains the views of the application. It is required by the express framework and jade template engine in this sample application.
-
-*   public/
-
-	This directory contains public resources of the application. It is required by the express framework in this sample application.
-
-*   package.json
-
-	This file is required by the Node.js environment. It specifies this Node.js project name, dependencies, and other configurations of your Node.js application.
-
-
+Additional detail to be added.

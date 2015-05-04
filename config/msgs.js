@@ -25,6 +25,7 @@ module.exports = {
     'invalid': 'JSON-LD is invalid.'
   },
   'as': {
+    'results': 'Validation results',
     'nodefs': 'Could not retieve Activity Stream definitions',
     'valid': 'ActivityStream is valid',
     'import': 'ActivityStream import failed',

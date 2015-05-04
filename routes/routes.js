@@ -52,9 +52,9 @@ module.exports = function(app, config) {
     var expandedDoc   = {};
     var flattenedDoc  = {};
     var jsonDoc       = {};
-    var asURI         = 'http://www.w3.org/ns/activitystreams#';
+    var baseURI       = 'http://www.w3.org/ns/activitystreams#';
 
-    request.get(asURI, function (error, response, body) {
+    request.get(baseURI, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         asVocab = JSON.parse(body);
     
@@ -82,56 +82,21 @@ module.exports = function(app, config) {
                 importedDoc = imported;
 
                 // VALIDATE ACTIVITYSTREAM DEFAULT MAPPINGS
-                // fetch the flattened version of the expanded document
                 expandedDoc = importedDoc._expanded;
-                jsonld.flatten(expandedDoc, function(err, flattened) {
-                  if (err !== null) {
-                    // TODO add error handle
-                  } else {
-                    flattenedDoc = flattened;
-                    console.log('EXPANDED: ' + JSON.stringify(expandedDoc));
-                    console.log('FLATTENED: ' + JSON.stringify(flattenedDoc));
+                console.log('EXPANDED: ' + JSON.stringify(expandedDoc));
+                var result = '';
+                result = getTypes(jsonDoc, expandedDoc, baseURI);
+                console.log(result);
 
-                    var activityType = [];
-                    var objectType = [];
-                    for (property in jsonDoc) {
-                      if (property !== '@context' ) {
-                        if (property === '@type') {
-                          activityType.push(jsonDoc[property]);
-                        } else {
-                          objectType.push(property);
-                        }
-                      }
-                    }
-                    // VALIDATE ACTIVITY TYPE MAPPINGS
-                    for (property in activityType) {
-                      if (expandedDoc["@type"][0] === asURI + activityType[property]) {
-                        console.log('"' + activityType[property] + '" matches the ActivityStream Activity Type: ' + asURI + activityType[property]);
-                      } else {
-                        console.log('"' + activityType[property] + '" does NOT correspond to any ActivityStream Activity Type!');
-                      }
-                    }
-                    // VALIDATE OBJECT TYPE MAPPINGS
-                    for (property in objectType) {
-                      if (expandedDoc.hasOwnProperty(asURI + objectType[property])) {
-                        console.log('"' + objectType[property] + '" matches the ActivityStream Object Type: ' + asURI + objectType[property]);
-                      } else {
-                        console.log('"' + objectType[property] + '" does NOT correspond to any ActivityStream Object Type!');
-                      }
-                    }
-
-
-                  // =====================================
-                  // VALIDATE Core Vocabulary Terms ======
-                  // =====================================
-      /*            asTest.asDisplayName(compacted, function(code, alert){
-                    sendResult(code, alert, content, res);
-                  });
-      */
-                  // All tests passed, send a friendly message
-                  sendResult(200, msgs.as.valid, content, res);
-                  }
+                // =====================================
+                // VALIDATE Core Vocabulary Terms ======
+                // =====================================
+    /*            asTest.asDisplayName(compacted, function(code, alert){
+                  sendResult(code, alert, content, res);
                 });
+    */
+                // All tests passed, send a friendly message
+                sendResult(200, msgs.as.results, result.replace(/\n/g,'<br>'), res);
               }
             })
           }
@@ -147,6 +112,73 @@ module.exports = function(app, config) {
     })
   });
 
+
+  function getTypes(jsonObject, expandedObject, baseURI) {
+    var result = '';
+    for (property in jsonObject) {
+      if (property !== '@context' ) {
+        if (property === '@type') {
+          // VALIDATE ACTIVITY TYPE MAPPING
+          //console.log('VALIDATE @TYPE: ' + jsonObject[property]);
+          result += validateActivityType(jsonObject[property], expandedObject, baseURI)
+        } else if (property === '@id') {
+          // ignore @id
+        } else {
+          if (typeof jsonObject[property] === 'object') {
+            // VALIDATE OBJECT TYPE MAPPING
+            //console.log('VALIDATE OBJECT: ' + property);
+            result += validateObjectOrPropertyType(property, expandedObject, baseURI)
+            //console.log('ENTERING NESTED OBJECT: ' + property);
+            // then iterate through the object
+            result += getTypes(jsonObject[property], expandedObject[baseURI + property][0], baseURI);
+          } else {
+            // VALIDATE PROPERTY MAPPING
+            //console.log('VALIDATE PROPERTY: ' + property);
+            result += validateObjectOrPropertyType(property, expandedObject, baseURI)
+          }
+        }
+      }
+    }
+    return result;
+  };
+
+  function validateActivityType(activityType, expandedObject, baseURI) {
+    var result = '';
+    var shouldMatch = baseURI + activityType;
+    var beingMatched = expandedObject["@type"][0]
+    if (beingMatched === shouldMatch) {
+      result = '"' + activityType + '" matches the ActivityStream Activity Type: ' + shouldMatch + '\n';
+    } else {
+      result = '-----------------' + '\n';
+      result += 'Implementers are not permitted to change the default mappings of the core properties and types' + '\n';
+      result += 'Raw activity type: ' + activityType + '\n';
+      result += 'Expanded value: ' + expandedObject["@type"][0] + '\n';
+      result += 'Normative value: ' + shouldMatch + '\n';
+      result += '-----------------' + '\n';
+    }
+    console.log(result);
+    return result;
+  }
+
+
+  function validateObjectOrPropertyType(activityType, expandedObject, baseURI) {
+    var result = '';
+    var shouldMatch = baseURI + activityType;
+    if (expandedObject.hasOwnProperty(shouldMatch)) {
+      result = '"' + activityType + '" matches the ActivityStream Object Type: ' + shouldMatch + '\n';
+    } else {
+      result = '-----------------' + '\n';
+      result += 'Implementers are not permitted to change the default mappings of the core properties and types' + '\n';
+      result += 'Raw activity type: ' + activityType + '\n';
+      result += 'Expanded value: ' + expandedObject["@type"][0] + '\n';
+      result += 'Normative value: ' + shouldMatch + '\n';
+      result += '-----------------' + '\n';
+    }
+    //console.log(result);
+    return result;
+  }
+  
+  
   // =====================================
   // RESULTS =============================
   // =====================================
@@ -187,6 +219,10 @@ module.exports = function(app, config) {
   // =====================================
   app.get('/asActivity/0001', function(req, res) {
     var obj = '{"@context": "http://www.w3.org/ns/activitystreams#Like","@type": "Like","actor": {"@type": "Person","displayName": "Sally"},"object": {"@type": "Note","displayName": "A Note"}}';
+    res.status(200).send(obj);
+  });
+  app.get('/asActivity/0002', function(req, res) {
+    var obj = '{"@context": ["http://asjsonld.mybluemix.net",{"Assign": "http://foo/Bar"}],"@type": "Assign"}';
     res.status(200).send(obj);
   });
   // =====================================
