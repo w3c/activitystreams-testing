@@ -20,7 +20,12 @@ app.use(methodOverride()); // simulate DELETE and PUT
 
 app.engine('html', require('ejs').renderFile);
 app.set('views', __dirname + '/views');
-app.set('host', process.env.VCAP_APP_HOST); // The IP address of the Cloud Foundry DEA (Droplet Execution Agent) that hosts this application
+
+if (process.env.VCAP_APP_HOST) {
+    // The IP address of the Cloud Foundry DEA (Droplet Execution Agent) that hosts
+    // this application
+    app.set('host', process.env.VCAP_APP_HOST);
+}
 app.set('port', process.env.VCAP_APP_PORT || process.env.PORT || '3000'); // The port on the DEA for communication with the application
 
 var appInfo = JSON.parse(process.env.VCAP_APPLICATION || "{}"); // VCAP_APPLICATION contains useful information about a deployed application.
